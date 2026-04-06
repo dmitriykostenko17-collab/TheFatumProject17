@@ -1,0 +1,58 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          # Ensure flet-build is available if needed, usually just flet is enough
+          pip install flet==0.28.3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2' # Stable version compatible with flet 0.28
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install Android SDK licenses
+        run: |
+          yes | sdkmanager --licenses || echo "Licenses already accepted or sdkmanager not in path"
+
+      - name: Flet Build APK
+        run: |
+          # Configure flutter to avoid prompts
+          flutter config --no-analytics
+          flet build apk --no-version-check
+        env:
+          PYTHONIOENCODING: utf-8
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: vfatumbot-apk
+          path: build/apk/*.apk
