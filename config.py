@@ -56,8 +56,21 @@ WATER_POINTS_SEARCH_MAX = 10
 SIGNIFICANCE_THRESHOLD = 2.5
 FILTERING_SIGNIFICANCE = 4.0
 
-# ─── Database ──────────────────────────────────────────────────────
-DATABASE_PATH = os.getenv("DATABASE_PATH", "vfatumbot.db")
+# ─── Database & Files (Android-Aware) ─────────────────────────────────
+def get_writable_dir():
+    # Attempt to find a writable dir for Android
+    if os.environ.get("ANDROID_ARGUMENT"):
+        # Flet on Android provides several writable locations
+        # Try FILES_DIR (set by Flet), if not, use the package's internal files dir
+        return os.environ.get("FILES_DIR", "/data/data/com.flet.thefatumproject17/files")
+    return "."
 
-# ─── Words file for intent suggestions ─────────────────────────────
+WRITABLE_DIR = get_writable_dir()
+# Ensure directory exists if possible (though os.makedirs might fail without permission)
+try:
+    if os.environ.get("ANDROID_ARGUMENT") and not os.path.exists(WRITABLE_DIR):
+        os.makedirs(WRITABLE_DIR, exist_ok=True)
+except: pass
+
+DATABASE_PATH = os.path.join(WRITABLE_DIR, "vfatumbot.db")
 WORDS_FILE_PATH = os.path.join(os.path.dirname(__file__), "words.txt")
