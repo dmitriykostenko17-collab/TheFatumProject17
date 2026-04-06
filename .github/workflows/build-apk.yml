@@ -48,7 +48,7 @@ jobs:
         run: |
           # Configure flutter to avoid prompts
           flutter config --no-analytics
-          flet build apk --no-version-check
+          flet build apk
         env:
           PYTHONIOENCODING: utf-8
 
